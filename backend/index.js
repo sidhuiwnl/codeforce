@@ -3,19 +3,25 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuid } = require("uuid");
-
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
 
 const TIMEOUT = 5000;
 
-//cors middleware
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");   
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://your-frontend-domain.com"
+  ],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+app.options("*", cors());
+
 
 app.post("/run", async (req, res) => {
   const { code, language, testCases } = req.body;
