@@ -340,7 +340,7 @@ function Test() {
   const runCode = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}`, {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/run`, {
         language,
         code,
         testCases: [

@@ -4,6 +4,9 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuid } = require("uuid");
 const cors = require("cors");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -110,4 +113,6 @@ app.post("/run", async (req, res) => {
 });
 
 
-app.listen(5000, () => console.log("Backend running on 5000"));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Backend running on ${PORT}`));
+
