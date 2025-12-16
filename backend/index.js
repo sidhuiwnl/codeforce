@@ -113,6 +113,11 @@ app.post("/run", async (req, res) => {
 });
 
 
+app.get("/test", (req, res) => {
+  res.send("Backend is working!");
+});
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend running on ${PORT}`));
 
