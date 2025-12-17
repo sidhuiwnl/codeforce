@@ -24,29 +24,79 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 
-/* =========================
-   CODE TEMPLATES
-========================= */
 const templates = {
-  javascript: `const fs = require("fs");
+  javascript: `/*
+HOW TO READ INPUT IN JAVASCRIPT (Node.js)
+
+- Input is provided via STDIN
+- Read input using fs.readFileSync(0, "utf8")
+- Split input by new lines
+
+Example Input:
+5
+10
+20
+30
+40
+50
+*/
+
+const fs = require("fs");
 const input = fs.readFileSync(0, "utf8").trim().split("\\n");
-const a = Number(input[0]);
-const b = Number(input[1]);
-console.log(a + b);`,
 
-  python: `a = int(input())
-b = int(input())
-print(a + b)`,
+// Example:
+// const n = Number(input[0]);
+// const value = Number(input[1]);
 
-  cpp: `#include <iostream>
+// Write your solution below
+`,
+
+  python: `"""
+HOW TO READ INPUT IN PYTHON
+
+- Use input() to read values
+- Each line corresponds to one input
+
+Example Input:
+5
+10
+20
+30
+40
+50
+"""
+
+# Example:
+# n = int(input())
+# arr = [int(input()) for _ in range(n)]
+
+# Write your solution below
+`,
+
+  cpp: `/*
+HOW TO READ INPUT IN C++
+
+- Use cin to read input
+- Input may be line-by-line or space-separated
+
+Example Input:
+5
+10 20 30 40 50
+*/
+
+#include <iostream>
 using namespace std;
 
 int main() {
-    int a, b;
-    cin >> a >> b;
-    cout << a + b;
+    // Example:
+    // int n;
+    // cin >> n;
+
+    // Write your solution below
+
     return 0;
-}`
+}
+`
 };
 
 /* =========================
@@ -54,6 +104,8 @@ int main() {
 ========================= */
 function Home() {
   const navigate = useNavigate();
+
+
 
   const startTest = () => {
     Swal.fire({
@@ -104,7 +156,7 @@ function Home() {
         >
           Start Secure Test
         </button>
-        
+
         <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
@@ -128,7 +180,7 @@ function Test() {
   const warningTimeoutRef = useRef(null);
 
   const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(templates.javascript);
+  const [code, setCode] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mobileView, setMobileView] = useState(false);
@@ -143,6 +195,21 @@ function Test() {
   /* =========================
      FULLSCREEN ENFORCEMENT
   ========================= */
+
+  const question = {
+    title: "Sum of Two Numbers",
+    description:
+      "You are given two integers. Read the input from standard input and print their sum.",
+    inputFormat: [
+      "First line contains an integer A",
+      "Second line contains an integer B"
+    ],
+    constraints: [
+      "-10^9 ≤ A, B ≤ 10^9"
+    ]
+  };
+
+
   const enforceFullscreen = () => {
     if (!document.fullscreenElement) {
       const elem = document.documentElement;
@@ -175,7 +242,7 @@ function Test() {
     const handleFullscreenChange = () => {
       const isFull = !!document.fullscreenElement;
       setIsFullscreen(isFull);
-      
+
       if (!isFull) {
         toast.error("⚠️ Fullscreen exited! Re-entering fullscreen...");
         setTimeout(enforceFullscreen, 1000);
@@ -187,14 +254,14 @@ function Test() {
       if (document.hidden) {
         setTabSwitchCount(prev => {
           const newCount = prev + 1;
-          
+
           if (newCount >= 3) {
             endTest("Test terminated due to multiple tab switches");
             return newCount;
           }
-          
+
           toast.error(`⚠️ Tab switched (${newCount}/2 warnings)`);
-          
+
           // Show warning message
           setShowWarning(true);
           if (warningTimeoutRef.current) {
@@ -203,7 +270,7 @@ function Test() {
           warningTimeoutRef.current = setTimeout(() => {
             setShowWarning(false);
           }, 3000);
-          
+
           return newCount;
         });
       }
@@ -226,9 +293,9 @@ function Test() {
     // Block DevTools
     const blockDevTools = (e) => {
       const keys = ['F12', 'F8'];
-      if (keys.includes(e.key) || 
-          (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-          (e.metaKey && e.altKey && e.key.toUpperCase() === 'I')) {
+      if (keys.includes(e.key) ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+        (e.metaKey && e.altKey && e.key.toUpperCase() === 'I')) {
         e.preventDefault();
         toast.error("⚠️ Developer tools are disabled");
         return false;
@@ -271,7 +338,7 @@ function Test() {
       clearTimeout(timer);
       if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
-      
+
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('keyup', handleKeyUp);
@@ -288,12 +355,12 @@ function Test() {
   ========================= */
   const endTest = (reason) => {
     setIsTestEnded(true);
-    
+
     // Exit fullscreen if in fullscreen
     if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
-    
+
     Swal.fire({
       title: 'Test Terminated',
       text: reason,
@@ -372,12 +439,12 @@ function Test() {
   };
 
   return (
-    <div 
+    <div
       ref={testContainerRef}
       className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 md:p-6 lg:p-8"
     >
-      <Toaster 
-        position="top-center" 
+      <Toaster
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: {
@@ -459,7 +526,7 @@ function Test() {
             <div className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg">
               <div className="flex gap-1">
                 {[...Array(3)].map((_, i) => (
-                  <div 
+                  <div
                     key={i}
                     className={`w-2 h-2 rounded-full ${i < (3 - tabSwitchCount) ? 'bg-green-500' : 'bg-red-500'}`}
                   />
@@ -487,16 +554,15 @@ function Test() {
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 hover:bg-gray-800 transition-colors duration-200 flex items-center justify-between"
               >
                 <span className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${
-                    language === "javascript" ? "bg-yellow-500" :
+                  <span className={`w-3 h-3 rounded-full ${language === "javascript" ? "bg-yellow-500" :
                     language === "python" ? "bg-blue-500" :
-                    "bg-purple-500"
-                  }`}></span>
+                      "bg-purple-500"
+                    }`}></span>
                   {languageOptions.find(l => l.value === language)?.label}
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
-              
+
               {dropdownOpen && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20">
                   {languageOptions.map((option) => (
@@ -506,11 +572,10 @@ function Test() {
                       className={`w-full px-4 py-3 text-left hover:bg-gray-800 transition-colors duration-150 flex items-center justify-between ${language === option.value ? "bg-gray-800" : ""}`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          option.value === "javascript" ? "bg-yellow-500" :
+                        <div className={`w-3 h-3 rounded-full ${option.value === "javascript" ? "bg-yellow-500" :
                           option.value === "python" ? "bg-blue-500" :
-                          "bg-purple-500"
-                        }`}></div>
+                            "bg-purple-500"
+                          }`}></div>
                         <span className="font-medium text-gray-100">{option.label}</span>
                       </div>
                       {language === option.value && (
@@ -549,28 +614,76 @@ function Test() {
             )}
           </div>
 
+          {/* PROBLEM STATEMENT */}
+          <div className="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg font-semibold text-white mb-3">
+              {question.title}
+            </h3>
+
+            <p className="text-gray-300 text-sm mb-4">
+              {question.description}
+            </p>
+
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-gray-200 mb-1">
+                Input Format:
+              </p>
+              <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
+                {question.inputFormat.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-gray-200 mb-1">
+                Constraints:
+              </p>
+              <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
+                {question.constraints.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+
+          {/* TEST CASES */}
           {/* TEST CASES */}
           <div className="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
             <h3 className="text-lg font-semibold text-white mb-4">
-              Test Cases
+              Sample Test Case Inputs
             </h3>
+
             <div className="space-y-3">
               {[
-                { input: "2, 3", output: "5", color: "bg-green-900/30" },
-                { input: "10, 20", output: "30", color: "bg-blue-900/30" },
-                { input: "100, 250", output: "350", color: "bg-purple-900/30" }
-              ].map((test, i) => (
-                <div key={i} className={`p-3 ${test.color} rounded-lg border border-gray-700`}>
+                "2\n3",
+                "10\n20",
+                "100\n250"
+              ].map((input, i) => (
+                <div
+                  key={i}
+                  className="p-3 rounded-lg border border-gray-700 bg-gray-900"
+                >
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="font-medium text-gray-300">Case {i + 1}</span>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                    <span className="font-medium text-gray-300">
+                      Case {i + 1}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-400">Input: {test.input}</p>
-                  <p className="text-sm text-gray-400">Expected: {test.output}</p>
+
+                  <pre className="text-gray-300 bg-black/40 p-2 rounded">
+                    {input}
+                  </pre>
+
+                  <p className="text-xs text-yellow-400 mt-2">
+                    Output will be validated automatically
+                  </p>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
 
         {/* RIGHT COLUMN */}
@@ -587,7 +700,7 @@ function Test() {
                 </div>
               </div>
             </div>
-            
+
             <div className={mobileView ? "overflow-x-auto" : ""}>
               <Editor
                 height={`${editorHeight}px`}
@@ -619,11 +732,10 @@ function Test() {
                 {result.map((r, i) => (
                   <div
                     key={i}
-                    className={`p-4 rounded-lg border-2 transition-all duration-300 ${
-                      r.passed
-                        ? "bg-green-900/20 border-green-700"
-                        : "bg-red-900/20 border-red-700"
-                    }`}
+                    className={`p-4 rounded-lg border-2 transition-all duration-300 ${r.passed
+                      ? "bg-green-900/20 border-green-700"
+                      : "bg-red-900/20 border-red-700"
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -637,11 +749,10 @@ function Test() {
                         </span>
                       </div>
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          r.passed
-                            ? "bg-green-900 text-green-300"
-                            : "bg-red-900 text-red-300"
-                        }`}
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${r.passed
+                          ? "bg-green-900 text-green-300"
+                          : "bg-red-900 text-red-300"
+                          }`}
                       >
                         {r.passed ? "PASSED" : "FAILED"}
                       </span>
@@ -683,8 +794,8 @@ function Test() {
 
       {/* Close dropdown when clicking outside */}
       {dropdownOpen && (
-        <div 
-          className="fixed inset-0 z-10" 
+        <div
+          className="fixed inset-0 z-10"
           onClick={() => setDropdownOpen(false)}
         />
       )}
