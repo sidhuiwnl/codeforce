@@ -27,7 +27,8 @@ app.use(cors({
 
 
 app.post("/run", async (req, res) => {
-  const { code, language, testCases } = req.body;
+  const { code, language, testCases = [], mode = "official", stdin = "" } = req.body;
+
   const id = uuid();
   const dir = path.join(__dirname, "tmp", id);
   fs.mkdirSync(dir, { recursive: true });
@@ -50,12 +51,12 @@ app.post("/run", async (req, res) => {
     file = "code.cpp";
     fs.writeFileSync(path.join(dir, file), code);
 
-    // compile first
     try {
       require("child_process").execSync("g++ code.cpp -o code", { cwd: dir });
     } catch (e) {
+      fs.rmSync(dir, { recursive: true, force: true });
       return res.json({
-        results: [{ passed: false, error: e.stderr?.toString() }]
+        error: e.stderr?.toString() || "Compilation failed"
       });
     }
 
@@ -67,6 +68,44 @@ app.post("/run", async (req, res) => {
     fs.writeFileSync(path.join(dir, file), code);
   }
 
+  /* =========================
+     CUSTOM RUN (USER INPUT)
+  ========================= */
+  if (mode === "custom") {
+    const child = spawn(command, args, {
+      cwd: dir,
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    child.on("close", () => {
+      fs.rmSync(dir, { recursive: true, force: true });
+      res.json({
+        output: stdout.trim(),
+        error: stderr || null
+      });
+    });
+
+    // 👇 USER PROVIDED INPUT
+    child.stdin.write(stdin);
+    child.stdin.end();
+
+    return;
+  }
+
+  /* =========================
+     OFFICIAL TEST CASE RUN
+  ========================= */
   const results = [];
 
   for (let test of testCases) {
@@ -102,7 +141,7 @@ app.post("/run", async (req, res) => {
         resolve();
       });
 
-      // ✅ THIS IS THE KEY FIX
+      // 👇 OFFICIAL TEST INPUT
       child.stdin.write(test.input);
       child.stdin.end();
     });

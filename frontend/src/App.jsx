@@ -178,6 +178,11 @@ function Test() {
   const testContainerRef = useRef(null);
   const blurTimeoutRef = useRef(null);
   const warningTimeoutRef = useRef(null);
+  const [customInput, setCustomInput] = useState("");
+const [customOutput, setCustomOutput] = useState("");
+const [customRunning, setCustomRunning] = useState(false);
+
+
 
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState("");
@@ -437,6 +442,30 @@ function Test() {
     setCode(templates[lang]);
     setDropdownOpen(false);
   };
+
+  const runCustomCode = async () => {
+  setCustomRunning(true);
+  setCustomOutput("");
+
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/run`,
+      {
+        language,
+        code,
+        stdin: customInput,
+        mode: "custom"
+      }
+    );
+
+    setCustomOutput(res.data.output || "No output");
+  } catch (err) {
+    setCustomOutput("Error while executing code");
+  } finally {
+    setCustomRunning(false);
+  }
+};
+
 
   return (
     <div
@@ -718,6 +747,33 @@ function Test() {
                   readOnly: false,
                 }}
               />
+            </div>
+
+            <div className="bg-gray-900 rounded-xl p-4 mt-6">
+              <h3 className="text-white font-semibold mb-2">
+                Custom Test (Your Input)
+              </h3>
+
+              <textarea
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                placeholder={`Example:\n2\n3`}
+                className="w-full h-28 bg-black text-green-400 font-mono p-3 rounded border border-gray-700 focus:outline-none"
+              />
+
+              <button
+                onClick={runCustomCode}
+                disabled={customRunning || !isFullscreen}
+                className="mt-3 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold"
+              >
+                {customRunning ? "Running..." : "Run with Custom Input"}
+              </button>
+
+              {customOutput && (
+                <pre className="mt-3 bg-black text-green-400 p-3 rounded text-sm overflow-x-auto">
+                  {customOutput}
+                </pre>
+              )}
             </div>
           </div>
 
